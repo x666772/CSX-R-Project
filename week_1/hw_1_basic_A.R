@@ -9,10 +9,10 @@ iris
 dim(iris)
 
 # 使用head() 回傳iris的前六列
-head(iris,6)
+head(iris)
 
 # 使用tail() 回傳iris的後六列
-tail(iris,6)
+tail(iris)
 
 # 使用str() 
 str(iris)
@@ -33,7 +33,7 @@ for (i in 1:9){
 ########################################################### Task 3
 
 # 使用sample(), 產出10個介於10~100的整數，並存在變數 nums
-nums<-sample(1:100,10)
+nums<-sample(10:100,10)
 
 # 查看nums
 nums
