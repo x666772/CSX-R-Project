@@ -1,7 +1,7 @@
 
-##week1
+## week1
 
-*作業說明
+* 作業說明
 
 read practice1~3
 
