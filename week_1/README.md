@@ -2,7 +2,7 @@
 ## week1
 
 - course_1
-    - pratice_1
+    - practice_1
     - practice_2
     - practice_3
 
