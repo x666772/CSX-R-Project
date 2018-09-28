@@ -1,6 +1,12 @@
 廖祐萱
-## week2
+### week_2
 
-完成practice1 & 2
-
-爬蟲- 台灣銀行外匯匯率
+- course_2
+    - practice_1.R
+    - practice_2.R
+    
+- hw_2
+    - hw_2_crawler_example
+        - currency_exchange_crawler.html
+        - currency_exchange_crawler.r
+        - currency_exchange_crawler.Rmd
