@@ -1,5 +1,4 @@
 ### practice_3
-### ptt_info_book
 
 # 基本變數資訊
 person.name <- c("Jiyuian", "Shawnroom", "Bigmoumou")
