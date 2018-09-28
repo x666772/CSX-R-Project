@@ -1,6 +1,8 @@
 ---
 title: "curency_exchange_crawler"
 output: html_document
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -9,7 +11,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 #Load the library
+library(xml2)
 library(rvest)
+library(stringr)
 
 ```
 ```{r}
@@ -22,14 +26,16 @@ cashbuy <- html_nodes(html, ".phone-small-font+ .text-right")
 cashbid <- html_nodes(html, ".print_hide+ .rate-content-cash.text-right")
 
 #Check Length
-length(country)
-length(cashbuy)
-length(cashbid)
+#length(country)
+#length(cashbuy)
+#length(cashbid)
 
 ```
 ```{r}
-#Define separate variables
+#Define separate variables & Organize
 countryvalues<-html_text(country)
+ countryvalues<-str_replace_all(countryvalues, "[\r\n]", "")
+ countryvalues<-str_replace_all(countryvalues, " ", "")
 cashbuyvalues<-html_text(cashbuy)
  temp<-matrix(cashbuyvalues,2,19)
  cashbuytrim<-temp[1,]

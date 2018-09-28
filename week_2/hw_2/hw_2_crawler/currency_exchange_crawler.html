@@ -126,10 +126,11 @@ $(document).ready(function () {
 
 
 <pre class="r"><code>#Load the library
-library(rvest)</code></pre>
-<pre><code>## Warning: package 'rvest' was built under R version 3.5.1</code></pre>
-<pre><code>## Loading required package: xml2</code></pre>
+library(xml2)</code></pre>
 <pre><code>## Warning: package 'xml2' was built under R version 3.5.1</code></pre>
+<pre class="r"><code>library(rvest)</code></pre>
+<pre><code>## Warning: package 'rvest' was built under R version 3.5.1</code></pre>
+<pre class="r"><code>library(stringr)</code></pre>
 <pre class="r"><code>#Load HTML website:
 html &lt;- read_html(&quot;https://rate.bot.com.tw/xrt?Lang=zh-TW&quot;)
 
@@ -139,14 +140,13 @@ cashbuy &lt;- html_nodes(html, &quot;.phone-small-font+ .text-right&quot;)
 cashbid &lt;- html_nodes(html, &quot;.print_hide+ .rate-content-cash.text-right&quot;)
 
 #Check Length
-length(country)</code></pre>
-<pre><code>## [1] 19</code></pre>
-<pre class="r"><code>length(cashbuy)</code></pre>
-<pre><code>## [1] 38</code></pre>
-<pre class="r"><code>length(cashbid)</code></pre>
-<pre><code>## [1] 19</code></pre>
-<pre class="r"><code>#Define separate variables
+#length(country)
+#length(cashbuy)
+#length(cashbid)</code></pre>
+<pre class="r"><code>#Define separate variables &amp; Organize
 countryvalues&lt;-html_text(country)
+ countryvalues&lt;-str_replace_all(countryvalues, &quot;[\r\n]&quot;, &quot;&quot;)
+ countryvalues&lt;-str_replace_all(countryvalues, &quot; &quot;, &quot;&quot;)
 cashbuyvalues&lt;-html_text(cashbuy)
  temp&lt;-matrix(cashbuyvalues,2,19)
  cashbuytrim&lt;-temp[1,]
@@ -155,46 +155,26 @@ cashbidvalues&lt;-html_text(cashbid)
 #Structure data frame and remove heading
 df = data.frame(countryvalues, cashbuytrim, cashbidvalues)
 df</code></pre>
-<pre><code>##                                                                         countryvalues
-## 1      \r\n                                美金 (USD)\r\n                            
-## 2      \r\n                                港幣 (HKD)\r\n                            
-## 3      \r\n                                英鎊 (GBP)\r\n                            
-## 4      \r\n                                澳幣 (AUD)\r\n                            
-## 5  \r\n                                加拿大幣 (CAD)\r\n                            
-## 6  \r\n                                新加坡幣 (SGD)\r\n                            
-## 7  \r\n                                瑞士法郎 (CHF)\r\n                            
-## 8      \r\n                                日圓 (JPY)\r\n                            
-## 9    \r\n                                南非幣 (ZAR)\r\n                            
-## 10   \r\n                                瑞典幣 (SEK)\r\n                            
-## 11     \r\n                                紐元 (NZD)\r\n                            
-## 12     \r\n                                泰幣 (THB)\r\n                            
-## 13 \r\n                                菲國比索 (PHP)\r\n                            
-## 14   \r\n                                印尼幣 (IDR)\r\n                            
-## 15     \r\n                                歐元 (EUR)\r\n                            
-## 16     \r\n                                韓元 (KRW)\r\n                            
-## 17   \r\n                                越南盾 (VND)\r\n                            
-## 18   \r\n                                馬來幣 (MYR)\r\n                            
-## 19   \r\n                                人民幣 (CNY)\r\n                            
-##    cashbuytrim cashbidvalues
-## 1        30.16         30.85
-## 2        3.749         3.965
-## 3        39.03         41.15
-## 4        21.82          22.6
-## 5        22.97         23.88
-## 6        21.83         22.74
-## 7        30.85         32.05
-## 8       0.2621        0.2749
-## 9            -             -
-## 10        3.09          3.61
-## 11       19.88         20.73
-## 12      0.8199        1.0079
-## 13      0.4905        0.6235
-## 14     0.00173       0.00243
-## 15       35.12         36.46
-## 16     0.02579       0.02969
-## 17     0.00094       0.00144
-## 18       6.294         7.924
-## 19       4.354         4.516</code></pre>
+<pre><code>##    countryvalues cashbuytrim cashbidvalues
+## 1      美金(USD)      30.105        30.795
+## 2      港幣(HKD)       3.735         3.951
+## 3      英鎊(GBP)       38.69         40.81
+## 4      澳幣(AUD)       21.65         22.43
+## 5  加拿大幣(CAD)       22.96         23.87
+## 6  新加坡幣(SGD)       21.75         22.66
+## 7  瑞士法郎(CHF)       30.47         31.67
+## 8      日圓(JPY)      0.2599        0.2727
+## 9    南非幣(ZAR)           -             -
+## 10   瑞典幣(SEK)        3.06          3.58
+## 11     紐元(NZD)        19.7         20.55
+## 12     泰幣(THB)      0.8199        1.0079
+## 13 菲國比索(PHP)       0.491         0.624
+## 14   印尼幣(IDR)     0.00173       0.00243
+## 15     歐元(EUR)       34.66            36
+## 16     韓元(KRW)     0.02579       0.02969
+## 17   越南盾(VND)     0.00093       0.00143
+## 18   馬來幣(MYR)       6.284         7.914
+## 19   人民幣(CNY)       4.339         4.501</code></pre>
 
 
 
