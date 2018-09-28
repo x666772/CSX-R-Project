@@ -1,11 +1,10 @@
-### practice_1_answer
-### BMI Caculator
+### practice_1
 
 # Craete variable called my.height.cm with your actual height in cm 
-my.height.cm <- 176
+my.height.cm <- 172
 
 # Craete variable called my.weight.cm with your actual weight in kg
-my.weight.kg <- 69
+my.weight.kg <- 66
 
 # Create my.height.m by my.height.cm 
 my.height.m <- my.height.cm / 100
