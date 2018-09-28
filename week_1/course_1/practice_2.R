@@ -1,6 +1,4 @@
-### practice_2_answer
-### course_grade
-
+### practice_2
 
 # Create a vector called course.students.number, with data: c(1, 30)
 course.student.number <- c(1:30)
