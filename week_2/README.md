@@ -6,6 +6,7 @@
     - practice_2.R
     
 - hw_2
-     - currency_exchange_crawler.html
-     - currency_exchange_crawler.r
-     - currency_exchange_crawler.Rmd
+    - hw_2_crawler
+      - currency_exchange_crawler.html
+      - currency_exchange_crawler.r
+      - currency_exchange_crawler.Rmd
