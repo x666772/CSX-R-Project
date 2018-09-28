@@ -1,5 +1,5 @@
 ---
-title: "curency_exchange_crawler"
+title: "爬蟲練習"
 output: html_document
 editor_options: 
   chunk_output_type: inline
@@ -14,8 +14,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(xml2)
 library(rvest)
 library(stringr)
-
 ```
+
 ```{r}
 #Load HTML website:
 html <- read_html("https://rate.bot.com.tw/xrt?Lang=zh-TW")
@@ -26,9 +26,9 @@ cashbuy <- html_nodes(html, ".phone-small-font+ .text-right")
 cashbid <- html_nodes(html, ".print_hide+ .rate-content-cash.text-right")
 
 #Check Length
-#length(country)
-#length(cashbuy)
-#length(cashbid)
+length(country)
+length(cashbuy)
+length(cashbid)
 
 ```
 ```{r}
@@ -38,11 +38,11 @@ countryvalues<-html_text(country)
  countryvalues<-str_replace_all(countryvalues, " ", "")
 cashbuyvalues<-html_text(cashbuy)
  temp<-matrix(cashbuyvalues,2,19)
- cashbuytrim<-temp[1,]
+ cashbuyvalues<-temp[1,]
 cashbidvalues<-html_text(cashbid)
 
 #Structure data frame and remove heading
-df = data.frame(countryvalues, cashbuytrim, cashbidvalues)
+df = data.frame(countryvalues, cashbuyvalues, cashbidvalues)
 df
 ```
 
