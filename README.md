@@ -1,3 +1,11 @@
-# 資料科學程式設計
+# NTU CSX 資料科學程式設計課
 
-廖祐萱
+台科工管四- 廖祐萱 B10401002
+
+- week_1
+  - R & R Studio
+  - Github & Github Desktop
+
+- week_2
+  - R Markdown & Html
+  - 爬蟲
