@@ -38,3 +38,4 @@ spirit.520 <- grepl("520", person.df$person.id)
 
 # 篩選出520家族的成員
 person.df[spirit.520, ]
+person.df
