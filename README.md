@@ -9,3 +9,7 @@
 - week_2
   - R Markdown & Html
   - 爬蟲
+ 
+- week_3
+  - Open data set
+  - 資料視覺化 & ggplot2
