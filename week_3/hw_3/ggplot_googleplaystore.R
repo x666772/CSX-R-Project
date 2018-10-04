@@ -5,16 +5,26 @@ data = read.csv("D:/CSX_Lyhs/week_3/hw_3/googleplaystore.csv",encoding='UTF-8')
 View(data)
 names(data)[names(data) == 'X.U.FEFF.App'] <- 'App'
 str(data)
-gsub('^<+|>$','',data$App)
-summary(data$Rating)
-data$App<-as.character(data$App)
-data$App <- str_replace_all(data$App, "[><]", "")
-filter(data, Rating>5)
-View(as.numeric(data$Rating))
-help("as.numeric")
+
+data$Reviews<-as.numeric(as.character(data$Reviews))
+data$Size<-as.character(data$Size)
+data$Size<-str_replace_all(data$Size, 'M','')
+data$Size<-as.numeric(data$Size)
+
+data$Installs<-as.character(data$Installs)
+data$Installs<-gsub('[[:punct:]]','',data$Installs)
+#View(data$Installs)
+data$Installs<-as.numeric(data$Installs)
+
+data$Price<-as.character(data$Price)
+data$Price<-substr(data$Price,2,6)
+data$Price<- as.numeric(data$Price)
+data$Price[is.na(data$Price)] <-0
+data$Price
+
 #繪圖物件
 library(ggplot2)
-ggplot(data, aes(x= Type, y=Rating ))+ geom_point()
+ggplot(data, aes(x= Rating, y=Price ))+ geom_point()
      help("ggplot")
 
 #散佈圖圖層
