@@ -1,0 +1,52 @@
+---
+---
+資料:10707-10709青少年(12歲以上未滿24歲)盜竊犯罪發生資料
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load Packages
+```{r warning=FALSE}
+library(jsonlite)
+library(tm)
+library(jiebaRD)
+library(jiebaR)
+library(RColorBrewer)
+library(wordcloud)
+```
+匯入API資料
+```{r}
+url <- 'https://od.moi.gov.tw/api/v1/rest/datastore/A01010000C-001051-046'
+jsonData <- fromJSON(url, flatten = T)
+str(jsonData)
+```
+轉換&停用字
+```{r}
+list<-as.list(jsonData$result$records$oc_p1)
+docs <- Corpus(VectorSource(list))
+docs
+toSpace <- content_transformer(function(x, pattern) {
+  return (gsub(pattern, " ", x))}
+)
+docs <- tm_map(docs, toSpace, "區") 
+docs <- tm_map(docs, toSpace, "市")
+docs <- tm_map(docs, toSpace, "鎮")
+```
+文字雲
+```{r}
+mixseg = worker()
+jieba_tokenizer=function(d){
+  unlist(segment(d[[1]],mixseg))
+}
+seg = lapply(docs, jieba_tokenizer)
+freqFrame = as.data.frame(table(unlist(seg)))
+freqFrame = freqFrame[-c(1:34),]
+wordcloud(freqFrame$Var1,freqFrame$Freq,
+          scale=c(5,0.5),min.freq=10,max.words=50,
+          random.order=FALSE, random.color=TRUE, 
+          rot.per=0, colors=brewer.pal(8, "Dark2"),
+          ordered.colors=FALSE,use.r.layout=FALSE,
+          fixed.asp=TRUE)
+```
+可知青少年犯罪重區在北中南大城市與桃園
+
