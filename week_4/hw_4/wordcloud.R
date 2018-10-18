@@ -24,12 +24,15 @@ docs <- tm_map(docs, toSpace, "市")
 docs <- tm_map(docs, toSpace, "鎮")
 
 mixseg = worker()
-jieba_tokenizer=function(d){
-  unlist(segment(d[[1]],mixseg))
-}
-seg = lapply(docs, jieba_tokenizer)
+
+mixseg[unlist(docs)]
+
+table(mixseg[unlist(docs)])
+
+as.data.frame(table(mixseg[unlist(docs)]))
+
 freqFrame = as.data.frame(table(unlist(seg)))
-freqFrame = freqFrame[-c(1:34),]
+
 wordcloud(freqFrame$Var1,freqFrame$Freq,
           scale=c(5,0.5),min.freq=10,max.words=50,
           random.order=FALSE, random.color=TRUE, 
