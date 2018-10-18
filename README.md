@@ -17,3 +17,8 @@
 - week_4
   - Open API
   - 文字探勘 & 詞頻矩陣 & 文字雲
+  
+- week_5
+  - 探索式資料分析 EDA
+  - Term Document Matrix
+  - TF-IDF
