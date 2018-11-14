@@ -117,7 +117,6 @@ for( id in c(2:n_tag) ){
 TDM[is.na(TDM)] <- 0 #將NA填0
 str(TDM)
 
-
 #TDM 轉 TF-IDF
 tf <- apply(as.matrix(TDM[,2:(n_tag + 1)]), 2, sum) #直向相加計算總數
 idfCal <- function(word_doc, n){ 
