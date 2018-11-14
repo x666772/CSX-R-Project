@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1542229900784.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "584869714",
+    "id" : "C74B9B6C",
+    "lastKnownWriteTime" : 1515789800,
+    "last_content_update" : 1515789800,
+    "path" : "D:/CSX_Lyhs/week_6/hw_6~8/lyrics_analysis/app.R",
+    "project_path" : "app.R",
+    "properties" : {
+        "cursorPosition" : "24,30",
+        "scrollLine" : "4"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
