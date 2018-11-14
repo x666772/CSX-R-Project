@@ -1,6 +1,6 @@
-#Å]Ãèºqµüºô
+#ç†±é–€æ­Œæ›²æ’è¡Œ
 
-#¸ü¤J©Ò»İªº®M¥ó¥]
+#è¼‰å…¥å¥—ä»¶åŒ…
 library(bitops)
 library(httr)
 library(RCurl)
@@ -19,25 +19,23 @@ library(proxy)
 library(readtext)
 library(slam)
 library(Matrix)
+library(dplyr)
 
-
-
-
-#§ì¥X±Æ¦æº]¤W©Ò¦³ºqµü­¶­±³sµ²©Ò¹ïÀ³ªººô§}
+#æŠ“å‡ºã€Œé­”é¡æ­Œè©ç¶²ã€æ’è¡Œæ¦œä¸Šæ‰€æœ‰æ­Œæ›²æ‰€å°æ‡‰çš„æ­Œè©é€£çµç¶²å€
 url  <- 'https://mojim.com/twzhot-song.htm'
 html <- htmlParse( GET(url) )
 xpath= '//*[(@id = "mx5_A") and (((count(preceding-sibling::*) + 1) = 1) and parent::*)]//a[(((count(preceding-sibling::*) + 1) = 1) and parent::*)]'
 url.list <- xpathSApply( html, xpath, xmlAttrs )
 url.list
 url.list= url.list[1,]
-#ÂH¤W«e¬q
+#è²¼ä¸Šç¶²å€
 urls= list()
 haha= function(a){paste0('https://mojim.com',a)}
 urls= lapply(url.list, haha)
 urls= unlist(urls)
 urls
 
-#¥Îºô§}¸ü¤Jºqµü
+#çˆ¬å…¥æ­Œè©ä¸¦å­˜æª”
 library(dplyr)
 xpath2= '//*[(@id = "fsZx3")]'
 xpath3= '//*[(@id = "fsZx2")]'
@@ -50,7 +48,8 @@ getdoc <- function(url){
 }
 lapply(urls,getdoc)
 
-#«Ø¥ß¤å¥»¸ê®Æµ²ºc»P°ò¥»¤å¦r²M¬~
+#å»ºç«‹æ–‡æœ¬è³‡æ–™çµæ§‹èˆ‡åŸºæœ¬æ–‡å­—æ¸…æ´—
+setwd("D:/CSX_Lyhs/week_5/hw_5/lyrics")
 dir = DirSource("./", encoding = "BIG-5")
 dir
 corpus = Corpus(dir)
@@ -62,53 +61,45 @@ corpus <- tm_map(corpus, function(word) {
 
 #View(corpus[[1]])
 
-# Â_µü
+#æ–·è©
 mixseg = worker()
 jieba_tokenizer = function(d){
   unlist(segment(d[[1]], mixseg))
 }
 seg = lapply(corpus, jieba_tokenizer)
-n = length(seg)
-n
-#µüÀW¦V¶q
-freqFrame = as.data.frame(table(unlist(seg)))
-str(freqFrame)
+str(seg)
 
-#µüÀW¯x°}
+#è©é »å‘é‡
+freqFrame = as.data.frame(table(unlist(seg)))
+tail(freqFrame)
+
+#è©é »çŸ©é™£TDM
 d.corpus <- Corpus(VectorSource(seg))
-d.corpus
 tdm <- TermDocumentMatrix(d.corpus)
-inspect(tdm)
-print( tf <- as.matrix(tdm) )
+tf <- as.matrix(tdm)
 DF <- tidy(tf)
 DF
 
-#±N¤w«Ø¦nªº TDM Âà¦¨ TF-IDF
-View(tdm)
-N = tdm$ncol # Column¼Æ(¸ê®Æ¼Æ)
-tf <- apply(tdm, 2, sum) # 2= ¹ï¨C­ÓColumn 
-tf #¨Cµ§¸ê®Æªº¸ê®Æ¶q
+
+#TDM è½‰ TF-IDF
+N = tdm$ncol
+tf <- apply(tdm, 2, sum) 
 idfCal <- function(word_doc){ 
-  log2( N / nnzero(word_doc) )    #'nnzero' = number of nonzero entries
+  log2( N / nnzero(word_doc) )   
 }
-idf <- apply(tdm, 1, idfCal) # 1= ¹ï¨C­ÓRow
-
+idf <- apply(tdm, 1, idfCal)
 doc.tfidf <- as.matrix(tdm)
-doc.tfidf
-
 for(x in 1:nrow(tdm)){
   for(y in 1:ncol(tdm))
   {
     doc.tfidf[x,y] <- (doc.tfidf[x,y] / tf[y]) * idf[x]
   }
 }
-
-findZeroId = as.matrix(apply(doc.tfidf, 1, sum)) # 1=¹ï¨C­ÓRow
-findZeroId
+findZeroId = as.matrix(apply(doc.tfidf, 1, sum)) # 1=å°æ¯å€‹Row
 tfidfnn = doc.tfidf[-which(findZeroId == 0),]
-View(tfidfnn)
+tfidfnn[1:7,1:7]
 
-#
+#æ‰¾å‡ºç†±é–€é—œéµè©
 freq=rowSums(as.matrix(tfidfnn))
 head(freq,10)
 tail(freq,10)
