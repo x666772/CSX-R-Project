@@ -29,13 +29,13 @@ person.df$person.id
 
 # 使用order(), 將person.df$person.days排序後, 建立days.position
 days.postion <- order(person.df$person.days)
-
+days.postion
 # 使用days.postion, 排序person.df
 person.df[days.postion, ]
 
 # 使用grepl()，找出person.df$person.id中有520精神的
 spirit.520 <- grepl("520", person.df$person.id)
-
+spirit.520
 # 篩選出520家族的成員
 person.df[spirit.520, ]
 person.df

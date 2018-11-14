@@ -18,7 +18,7 @@ GetBmi <- function (my.height.cm, my.weight.kg) {
 # 使用read.table()讀取test_data.csv
 # 請注意sep, header的用途, 以及stringsAsFactors = F的影響
 df <- read.table('D:/CSX_lyhs/week_2/course_2/test_data.csv', sep =',', header = T , stringsAsFactors = F)
-
+df
 # 使用dim()查看df的維度(列數與欄數)
 dim(df)
 
@@ -48,10 +48,10 @@ Kobe <- c("Kobe", "A", "M", NA, 39, 198, 96)
 
 # 使用cbind()，新增Height與Weight至df為欄(column)資料
 df <- cbind(df, Height, Weight)
-
+df
 # 使用rbind()，新增kobe至df為列(row)資料
 df <- rbind(df, Kobe)
-
+df
 # 重新使用str()檢查一次df的結構時...
 # Age, Grade, Height, Weight都變成chr型態了?? <- 被kobe資料
 str(df)

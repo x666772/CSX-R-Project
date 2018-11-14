@@ -29,7 +29,7 @@ if (my.bmi >= 35) {
 } else if (my.bmi >= 18.5) {
   print(paste("Your bmi: ", my.bmi))
   print("正常範圍")
-} #else {
-  #print(paste("Your bmi: ", my.bmi))
-  #print("過輕!")
-#}
+} else {
+  print(paste("Your bmi: ", my.bmi))
+  print("過輕!")
+}

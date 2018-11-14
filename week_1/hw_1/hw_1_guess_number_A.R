@@ -1,7 +1,11 @@
 x <- 1000:9999
 answer <- sample(x, size = 1, replace=T)
+answer
 answer <- as.character(answer)
+answer
 answer <- c(substr(answer,1,1),substr(answer,2,2),substr(answer,3,3),substr(answer,4,4))
+answer
+help('substr')
 time <- 0
 repeat{
   
@@ -34,3 +38,4 @@ repeat{
     break}
 }
 
+help('cat')
