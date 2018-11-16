@@ -1,0 +1,12 @@
+name: shinylyrics
+title: shinylyrics
+username:
+account: x666772
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 576812
+bundleId: 1705081
+url: https://x666772.shinyapps.io/shinylyrics/
+when: 1542395897.02413
+asMultiple: FALSE
+asStatic: FALSE

@@ -55,6 +55,7 @@ haha= function(a){paste0('https://mojim.com',a)}
 urls= lapply(url.list , haha)
 urls= unlist(urls)
 urls
+help(ggplot)
 
 #爬入歌詞並存檔
 library(dplyr)
@@ -166,8 +167,15 @@ cos <- function(x, y){
 }
 input= ' 一個人去巴黎'
 docs.cos.sim_tag <- apply(tfidf , 2, cos, y = tfidf[, c(input)])
-sort(docs.cos.sim_tag, decreasing = TRUE)[1:10]
-
+cos.sim.sort= as.data.frame(sort(docs.cos.sim_tag, decreasing = TRUE)[1:10])
+cos.sim.sort= cbind(cos.sim.sort, rownames(cos.sim.sort))
+colnames(cos.sim.sort)<-c('simularity','song')
+ggplot(cos.sim.sort , aes(x = reorder(song, simularity), y =simularity)) + 
+  geom_bar(stat = "identity", fill='lightblue') + coord_flip()
+help(plot)
+plot(cos.sim.sort)
+str(cos.sim.sort)
+as.data.frame(cos.sim.sort)
 #6. 唐詩三百首文字雲 (所有tag相加)
 #BY tf-idf
 f_tag <- sort(rowSums(tfidf), decreasing = T)
