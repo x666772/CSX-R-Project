@@ -1,0 +1,13 @@
+name: shinylyrics
+title:
+username:
+account: x666772
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 577580
+bundleId: 1708994
+url: https://x666772.shinyapps.io/shinylyrics/
+when: 1542645864.88316
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: songNames.txt
