@@ -85,13 +85,15 @@ corpus <- tm_map(corpus, function(word) {
 corpus <- tm_map(corpus, function(word) {
   gsub("妳", "你", word) })
 corpus <- tm_map(corpus, function(word) {
-  gsub("\n", " ", word) })
+  gsub("她", "他", word) })
+corpus <- tm_map(corpus, function(word) {
+  gsub("\n", "", word) })
 ```
 
 斷詞
 ```{r message=FALSE, warning=FALSE, paged.print=FALSE}
 mixseg = worker()
-new_user_word(mixseg,c('為了','再也','讓人','想像','也不','這是','再這樣'))
+new_user_word(mixseg,c('為了','再也','讓人','想像','也不','這是','再這樣','為人','人為'))
 jieba_tokenizer = function(d){
   unlist(segment(d[[1]], mixseg))
 }

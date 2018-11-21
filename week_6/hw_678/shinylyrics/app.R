@@ -8,6 +8,7 @@ source('global.R', local = TRUE)
 dir = DirSource("lyrics/", encoding = "BIG-5")
 dir
 corpus = Corpus(dir)
+
 corpus <- tm_map(corpus, removePunctuation)
 corpus <- tm_map(corpus, removeNumbers)
 corpus <- tm_map(corpus, function(word) {
@@ -294,8 +295,8 @@ server <- function(input, output) {
 # Run the application 
 shinyApp(ui = ui, server = server)
 
-tmp.enc <- options()$encoding
-options(encoding = "UTF-8")
-deployApp()
-options(encoding = tmp.enc)
+#tmp.enc <- options()$encoding
+#options(encoding = "UTF-8")
+#deployApp()
+#options(encoding = tmp.enc)
 
