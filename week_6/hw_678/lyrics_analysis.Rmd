@@ -204,7 +204,7 @@ fviz_pca_var(pca, col.var = "contrib")
 
 k-means分群(歌詞)
 ```{r}
-k_word = 7
+k_word = 8
 kmeansData_word = pca$x[,1:2]
 #kmeansData_word = kmeansData_word[kmeansData_word[,1] > -0.05, ]
 
@@ -219,7 +219,7 @@ plot_ly(kmeansData_word, x= ~PC1, y=~PC2, type='scatter',
 
 k-means分群(歌曲)
 ```{r}
-k_song = 7
+k_song = 8
 kmeansData_song = pca$rotation[,1:2]
 #kmeansData_song = kmeansData_song[kmeansData_song[,1] > -0.05, ]
 
