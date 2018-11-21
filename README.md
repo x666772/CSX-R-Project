@@ -22,3 +22,11 @@
   - 探索式資料分析 EDA
   - Term Document Matrix
   - TF-IDF
+
+- week_6
+  - 主成分分析 PCA
+  - K-means 分群
+ 
+- week_7
+  - shiny app
+
