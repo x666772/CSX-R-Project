@@ -34,7 +34,7 @@ seg = lapply(corpus, jieba_tokenizer)
 str(seg)
 seg.ma= matrix(unlist(seg))
 write(seg.ma,'seg.ma.txt')
-TrainingFile2 <- system.file('ex', "seg.ma.txt", package = "tmcn.word2vec")
+TrainingFile2 <- system.file('', "./seg.ma.txt", package = "tmcn.word2vec")
 help("system.file")
 ModelFile2 <- file.path(tempdir(), "output", "model2.bin")
 ??train_file
