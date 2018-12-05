@@ -58,7 +58,8 @@ corpus <- tm_map(corpus, removePunctuation)
 corpus <- tm_map(corpus, removeNumbers)
 corpus <- tm_map(corpus, function(word) {
   gsub("[A-Za-z0-9]", "", word)})
-
+text= unlist(corpus)
+write(text,'lyrics.txt')
 #View(corpus[[1]])
 
 #斷詞
