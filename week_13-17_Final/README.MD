@@ -8,5 +8,7 @@ https://tallya851109.github.io/CSX_RProject/期末報告/德州撲克第二組20
 - 情境短片（4:47~7:40）
 https://www.youtube.com/watch?v=WEK20zFtSkY
 
-4. GitHub 連結
+- EDA
+
+- Results
 https://bryan051003.github.io/csx_rproject/final/flop_hs_train.html
