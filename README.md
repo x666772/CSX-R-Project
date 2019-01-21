@@ -7,7 +7,7 @@
   - [NER_practice](https://x666772.github.io/CSX_Lyhs/week_12/hw_12/NER_CNN.html)
  
 - project_week_6~10
-  - [魔鏡歌詞網歌詞分析](https://x666772.github.io/CSX_Lyhs/week_6/hw_678/lyrics_analysis.html)
+  - [期中專案- 魔鏡歌詞網歌詞分析](https://x666772.github.io/CSX_Lyhs/week_6/hw_678/lyrics_analysis.html)
 
 - week_7
   - shiny app
