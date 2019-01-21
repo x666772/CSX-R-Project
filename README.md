@@ -2,7 +2,8 @@
 
 台科工管四- 廖祐萱 B10401002
 
-- [FINAL-德州撲克行為模式分析](https://github.com/x666772/CSX_Lyhs/tree/master/week_13-17_Final)
+- Final_project_week_13~17
+  -[期末報告- 德州撲克行為模式分析](https://github.com/x666772/CSX_Lyhs/tree/master/week_13-17_Final)
 
 - week_12
   - 命名實體識別 Named Entity Recognition
