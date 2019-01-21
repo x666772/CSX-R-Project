@@ -1,0 +1,145 @@
+---
+title: "flop hs train"
+author: "b10401038"
+date: "2018年12月27日"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r }
+library(readtext)
+library(stringr)
+library(dplyr)
+library(holdem)
+library(tidyr)
+library(caret)
+library(randomForest)
+library(xgboost)
+```
+
+### 讀資料 稍微整理一下
+
+```{r }
+action<-read.csv("C:/Users/USER/Desktop/p/poker.flop.csv")
+action<-action[,-1]
+att<-read.csv("C:/Users/USER/Desktop/p/屬性.csv")
+colnames(att)[1] <- "winner"
+flop<-merge(action, att, by = "winner", all = T)
+colnames(flop)[c(5:18)] <- c("翻牌前底池","目前底池","翻牌前投注總金額","動作","付出金額","需付出金額","目前賠率","給對手賠率","翻牌前積極度","ReRaise","CBet","目前順位","翻牌前順位","翻牌前投注金額比率")
+
+str(flop)
+
+```
+
+```{r}
+flop$rank.hand<-floor(flop$HS.hand/1000000)
+flop$rank.flop<-floor(flop$HS.flop/1000000)
+flop$rank.board<-floor(flop$BS.flop/1000000)
+
+flop$HS.hand<-flop$HS.hand-flop$rank.hand*1000000
+flop$HS.flop<-flop$HS.flop-flop$rank.flop*1000000
+flop$BS.flop<-flop$BS.flop-flop$rank.board*1000000
+
+flop$HS.hand[flop$rank.hand==0]<-round(pnorm(scale(flop$HS.hand[flop$rank.hand==0])),2)
+flop$HS.hand[flop$rank.hand==1]<-round(pnorm(scale(flop$HS.hand[flop$rank.hand==1])),2)
+
+for(i in 0:7){
+  flop$HS.flop[flop$rank.flop==i]<-round(pnorm(scale(flop$HS.flop[flop$rank.flop==i])),2)
+}
+for(i in 0:7){
+  flop$BS.flop[flop$rank.board==i]<-round(pnorm(scale(flop$BS.flop[flop$rank.board==i])),2)
+}
+
+flop$HS.hand<-flop$HS.hand+flop$rank.hand
+flop$HS.flop<-flop$HS.flop+flop$rank.flop
+flop$BS.flop<-flop$BS.flop+flop$rank.board
+
+
+```
+
+
+```{r}
+ggplot(flop, aes(x = HS.flop)) + geom_density(kernel = "gaussian",fill = "steelblue")
+
+```
+
+
+
+```{r}
+ggplot(flop, aes(翻牌前順位, 翻牌前投注金額比率))+ geom_boxplot()
+
+```
+
+
+```{r}
+ggplot(flop, aes(HS.flop,給對手賠率)) + geom_point()+ geom_smooth()
+
+```
+
+
+### 訓練資料與測試資料比例: 70%建模，30%驗證
+
+```{r}
+
+flop2<-flop[-c(1,2,3,23)]
+flop2$BS.flop<-flop2$BS.flop-flop2$rank.board
+# #訓練資料與測試資料比例: 70%建模，30%驗證
+n <- nrow(flop2)
+set.seed(123)
+shuffle <- flop2[sample(n), ]
+t_idx <- sample(seq_len(n), size = round(0.7 * n))
+train <- shuffle[t_idx,]
+test <- shuffle[ - t_idx,]
+```
+
+***
+> RandomForest 
+
+
+```{r}
+
+#randomforest
+set.seed(123)
+rf_model = randomForest(rank.flop~.,data=train,ntree=1000)
+# 預測
+rf_y = predict(rf_model, test)
+mean((rf_y - test$rank.flop)^2) # MSE
+```
+
+### 看需不需要調整參數 幾棵樹?
+
+```{r}
+#tune ntree
+# Observe that what is the best number of trees
+plot(rf_model)
+
+#tune mtry
+set.seed(123)
+tuneRF(train[,-1], train[,1])
+```
+
+##### 看起來不太需要調整~~~
+
+
+### 變數重要程度
+
+```{r}
+# Variable Importance of Random Forest
+rf_model$importance
+varImpPlot(rf_model)
+```
+
+### 預測結果與準確度
+
+```{r}
+cm<-table(test$rank.flop, round(rf_y), dnn = c("實際", "預測"))
+cm
+accuracy <- sum(diag(cm)) / sum(cm)
+accuracy
+```
+

@@ -1,0 +1,402 @@
+---
+title: "poker"
+author: "b10401038"
+date: "2018年11月22日"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###德州撲克牌局行為分析
+用因素與行為進行分析
+
+```{r cars}
+library(readtext)
+library(stringr)
+library(dplyr)
+library(holdem)
+library(tidyr)
+
+library(cluster)
+library(pvclust)
+library(xtable)
+library(plyr)
+library(ggplot2)
+library(car)
+library(lattice)
+
+poker<-readtext("C:/Users/USER/Desktop/p/POKER/*.txt")
+u<-unlist(strsplit(poker$text,"\n\n\n\n", fixed = TRUE,useBytes = TRUE))
+
+```
+###raw data
+
+```{r}
+u[3]
+```
+
+
+
+
+```{r warning=FALSE}
+po<-strsplit(u,"\n*** SHOW DOWN ***\n", fixed = TRUE,useBytes = TRUE)
+pok<-po[lapply(po, length) == 2]
+
+pok<-lapply(pok,function(xi)unlist(strsplit(xi,"\n*** HOLE CARDS ***\n", fixed = TRUE,useBytes = TRUE)))
+pok<-lapply(pok,function(xi)unlist(strsplit(xi,"\n*** FLOP *** ", fixed = TRUE,useBytes = TRUE)))
+pok<-lapply(pok,function(xi)unlist(strsplit(xi,"\n*** TURN *** ", fixed = TRUE,useBytes = TRUE)))
+pok<-lapply(pok,function(xi)unlist(strsplit(xi,"\n*** RIVER *** ", fixed = TRUE,useBytes = TRUE)))
+pok<-lapply(pok,function(xi)unlist(strsplit(xi,"\n*** SUMMARY ***\n", fixed = TRUE,useBytes = TRUE)))
+```
+
+
+
+```{r warning=FALSE}
+pok.w<-lapply(pok,function(xi)unlist(strsplit(xi[6],"\n", fixed = TRUE,useBytes = TRUE)))
+pok.w<-lapply(pok.w, function(xi)grep("collected+",xi, value = TRUE))
+pok.w<-lapply(pok.w,function(xi)word(xi))
+
+#repeat by winner more than one
+#ex.) rep(1:4, c(2,1,2,1))
+poke<-rep(pok, unlist(lapply(pok.w,length)))
+#seperate win win
+poke.w<-unlist(pok.w)
+
+
+poke.1<-lapply(poke,function(xi)xi[1]) 
+poke.1<-lapply(poke.1,function(xi)unlist(strsplit(xi,"\n", fixed = TRUE,useBytes = TRUE)))
+
+#take action
+#hold card
+poke.2<-lapply(poke,function(xi)xi[2]) 
+poke.2<-lapply(poke.2,function(xi)unlist(strsplit(xi,"\n", fixed = TRUE,useBytes = TRUE)))
+
+#flop
+poke.3<-lapply(poke,function(xi)xi[3]) 
+poke.3<-lapply(poke.3,function(xi)unlist(strsplit(xi,"\n", fixed = TRUE,useBytes = TRUE)))
+
+#turn
+poke.4<-lapply(poke,function(xi)xi[4]) 
+poke.4<-lapply(poke.4,function(xi)unlist(strsplit(xi,"\n", fixed = TRUE,useBytes = TRUE)))
+
+#river
+poke.5<-lapply(poke,function(xi)xi[5]) 
+poke.5<-lapply(poke.5,function(xi)unlist(strsplit(xi,"\n", fixed = TRUE,useBytes = TRUE)))
+
+#show down
+poke.6<-lapply(poke,function(xi)xi[6])
+poke.6<-lapply(poke.6,function(xi)unlist(strsplit(xi,"\n", fixed = TRUE,useBytes = TRUE)))
+
+#board
+poke.bp<-lapply(poke,function(xi)xi[7])
+poke.bp<-lapply(poke.bp,function(xi)unlist(strsplit(xi,"\n", fixed = TRUE,useBytes = TRUE)))
+poke.b<-substr(lapply(poke.bp, function(xi)grep("Board+",xi, value = TRUE)),8,21)
+#pot
+poke.p<-as.numeric(substr(lapply(poke.bp, function(xi)word(xi[1],3)),2,21))
+
+
+#poker winner df
+poker.w<-data.frame(winner=poke.w,card=1,board=poke.b,begin=I(poke.1),hold_card=I(poke.2),flop=I(poke.3),turn=I(poke.4),river=I(poke.5),show_down=I(poke.6),collect=1,pot=poke.p)
+
+#hold card, show down, collected money####
+show_down<-mapply(grep, poker.w$winner, poker.w$show_down, value = TRUE,fixed = TRUE, SIMPLIFY = F)
+poker.w$card<-substr(word(lapply(show_down,function(xi)sub('.*\\:',"",xi)),3,4),2,6)
+poker.w$show_down<-word(lapply(show_down,function(xi)sub('.*\\:',"",xi[1])),5,-1)
+poker.w$collect<-as.list(substr(word(lapply(show_down,function(xi)sub('.*collected ',"",xi[2]))),2,7))
+poker.w$collect<-as.numeric(poker.w$collect)
+#remove na
+poker.w <- poker.w[complete.cases(poker.w[2]), ]
+poker.w <- poker.w[complete.cases(poker.w[10]), ]
+
+#number suit####
+cb<-strsplit(apply(poker.w[ ,c("card","board")] , 1 , paste, collapse = " " ), " ")
+poker.w$number<-lapply(cb,function(xi)as.numeric(gsub("T","10",gsub("J","11",gsub("Q","12",gsub("K","13",gsub("A","14",substr(xi,1,1))))))))
+poker.w$suit<-lapply(cb,function(xi)as.numeric(gsub("s",1,gsub("h",2,gsub("d",3,gsub("c",4,substr(xi,2,2)))))))
+
+
+#pot - uncall bet , Current pot state####
+poker.w$potr <-  unlist(lapply(mapply(grep, "$", poker.w$river, value = TRUE,fixed = TRUE),function(xi)sum(as.numeric(word(sub('.*\\$',"",xi),1)), na.rm=TRUE)))
+poker.w$pott <-  unlist(lapply(mapply(grep, "$", poker.w$turn, value = TRUE,fixed = TRUE),function(xi)sum(as.numeric(word(sub('.*\\$',"",xi),1)), na.rm=TRUE)))
+poker.w$potf <-  unlist(lapply(mapply(grep, "$", poker.w$flop, value = TRUE,fixed = TRUE),function(xi)sum(as.numeric(word(sub('.*\\$',"",xi),1)), na.rm=TRUE)))
+# uncall bet
+poker.w$potre <-  lapply(mapply(grep, "$", poker.w$river, value = TRUE,fixed = TRUE),function(xi)as.numeric(sub("\\).*","",grep(')',word(sub('.*\\$',"",xi),1), value = TRUE,fixed = TRUE))))
+poker.w$potte <-  lapply(mapply(grep, "$", poker.w$turn, value = TRUE,fixed = TRUE),function(xi)as.numeric(sub("\\).*","",grep(')',word(sub('.*\\$',"",xi),1), value = TRUE,fixed = TRUE))))
+poker.w$potfe <-  lapply(mapply(grep, "$", poker.w$flop, value = TRUE,fixed = TRUE),function(xi)as.numeric(sub("\\).*","",grep(')',word(sub('.*\\$',"",xi),1), value = TRUE,fixed = TRUE))))
+# find zero-length values in uncall bet
+# replace these values with 0
+poker.w$potre[!(sapply(poker.w$potre, length))] <- 0
+poker.w$potr[is.na(poker.w$potr)] <- 0
+poker.w$potte[!(sapply(poker.w$potte, length))] <- 0
+poker.w$pott[is.na(poker.w$pott)] <- 0
+poker.w$potfe[!(sapply(poker.w$potfe, length))] <- 0
+poker.w$potf[is.na(poker.w$potf)] <- 0
+#calculate pot state
+poker.w$potr<-poker.w$pot-as.numeric(poker.w$potr)+as.numeric(poker.w$potre)
+poker.w$pott<-poker.w$potr-as.numeric(poker.w$pott)+as.numeric(poker.w$potte)
+poker.w$potf<-poker.w$pott-as.numeric(poker.w$potf)+as.numeric(poker.w$potfe)
+
+
+#pre ,blind, chips####
+#blind, chips
+begin<-mapply(grep, poker.w$winner, poker.w$begin, value = TRUE,fixed = TRUE, SIMPLIFY = F)
+poker.w$chips<-as.numeric(substr(word(lapply(begin,function(xi)sub('.*\\$',"",xi[1]))),1,8))
+poker.w$blind<-unlist(lapply(begin,function(xi)word(sub('.*\\: ',"",xi[2]),2)))
+poker.w$blind[is.na(poker.w$blind)] <- "not"
+poker.w$blind<-unlist(lapply(poker.w$blind,function(xi)gsub("the",'not',xi)))
+poker.w$blind<-unlist(lapply(poker.w$blind,function(xi)gsub("($31.76","not",xi,fixed = TRUE)))
+poker.w$blind<-as.factor(poker.w$blind)
+poker.w$blind = factor(poker.w$blind,levels(poker.w$blind)[c(1,3,2)])
+
+#str(poker.w$blind) 
+#see if there has factor error
+
+#Hand Strenghth####
+poker.w$HS.pre<-mapply(handeval, lapply(poker.w$number,function(xi)xi[1:2]), lapply(poker.w$suit,function(xi)xi[1:2]))
+poker.w$HS.flop<-mapply(handeval, lapply(poker.w$number,function(xi)xi[1:5]), lapply(poker.w$suit,function(xi)xi[1:5]))
+poker.w$HS.turn<-mapply(handeval, lapply(poker.w$number,function(xi)xi[1:6]), lapply(poker.w$suit,function(xi)xi[1:6]))
+poker.w$HS.river<-mapply(handeval, poker.w$number, poker.w$suit)
+#board strenghth
+poker.w$HS.fb<-mapply(handeval, lapply(poker.w$number,function(xi)xi[3:5]), lapply(poker.w$suit,function(xi)xi[3:5]))
+poker.w$HS.tb<-mapply(handeval, lapply(poker.w$number,function(xi)xi[3:6]), lapply(poker.w$suit,function(xi)xi[3:6]))
+poker.w$HS.rb<-mapply(handeval, lapply(poker.w$number,function(xi)xi[3:7]), lapply(poker.w$suit,function(xi)xi[3:7]))
+
+poker.w$HS.r<-pnorm(scale(poker.w$HS.river))
+poker.w$HS.t<-pnorm(scale(poker.w$HS.turn,2381621,1602180))
+poker.w$HS.f<-pnorm(scale(poker.w$HS.flop,2381621,1602180))
+poker.w$HS.p<-pnorm(scale(poker.w$HS.pre,2381621,1602180))
+poker.w$HS.rb<-pnorm(scale(poker.w$HS.rb,2381621,1602180))
+poker.w$HS.tb<-pnorm(scale(poker.w$HS.tb,2381621,1602180))
+poker.w$HS.fb<-pnorm(scale(poker.w$HS.fb,2381621,1602180))
+
+```
+
+同花順 0.999
+四張   0.998
+葫蘆   0.988
+同花   0.982
+順子   0.843
+三張   0.651
+二配   0.406
+一配   0.203
+單張   0.155
+
+```{r warning=FALSE}
+plot(density(poker.w$HS.r))
+```
+
+
+
+```{r warning=FALSE}
+#grep winner from string for winner action, remove uncall bet####
+poker.w$aP <- lapply(mapply(grep, poker.w$winner, poker.w$hold_card, value = TRUE,fixed = TRUE),function(xi)gsub('.*\\: ',"",xi[gsub("Uncalled.*","",xi)!= ""] ))
+poker.w$aF <-  lapply(mapply(grep, poker.w$winner, poker.w$flop, value = TRUE,fixed = TRUE),function(xi)gsub('.*\\: ',"",xi[gsub("Uncalled.*","",xi)!= ""] ))
+poker.w$aT <-  lapply(mapply(grep, poker.w$winner, poker.w$turn, value = TRUE,fixed = TRUE),function(xi)gsub('.*\\: ',"",xi[gsub("Uncalled.*","",xi)!= ""] ))
+poker.w$aR <-  lapply(mapply(grep, poker.w$winner, poker.w$river, value = TRUE,fixed = TRUE),function(xi)gsub('.*\\: ',"",xi[gsub("Uncalled.*","",xi)!= ""] ))
+
+
+#ACTION####
+poker.w$Pa<-mapply(tail,poker.w$aP,1)
+poker.w$Fa<-mapply(tail,poker.w$aF,1)
+poker.w$Ta<-mapply(tail,poker.w$aT,1)
+poker.w$Ra<-mapply(tail,poker.w$aR,1)
+
+poker.w$Pa<-mapply(word,poker.w$Pa,1)
+poker.w$Fa<-mapply(word,poker.w$Fa,1)
+poker.w$Ta<-mapply(word,poker.w$Ta,1)
+poker.w$Ra<-mapply(word,poker.w$Ra,1)
+
+poker.w$Pa[is.na(poker.w$Pa)] <- "0"
+poker.w$Fa[is.na(poker.w$Fa)] <- "0"
+poker.w$Ta[is.na(poker.w$Ta)] <- "0"
+poker.w$Ra[is.na(poker.w$Ra)] <- "0"
+
+
+#betted money####
+poker.w$mP<-unlist(lapply(poker.w$aP,function(xi)sum(as.numeric(substr(word(gsub(".*\\calls ","",xi)),2,6)), na.rm=TRUE)))
+poker.w$mP[is.na(poker.w$mP)] <- 0
+poker.w$mP<-as.numeric(poker.w$mP)
+poker.w$tempmoney<-unlist(lapply(poker.w$aP,function(xi)as.numeric(word(sub('.*\\$',"",tail(xi[gsub("calls.*","",xi)!= ""],1))))))
+poker.w$mP<-mapply(sum, poker.w$mP,poker.w$tempmoney, na.rm=TRUE)
+poker.w$tempmoney<-unlist(lapply(poker.w$aP,function(xi)as.numeric(substr(word(gsub("raises ","",tail(xi,1)),3,3),2,6))))
+poker.w$mP[poker.w$Pa=="raises"]<-poker.w$tempmoney[poker.w$Pa=="raises"]
+
+
+
+poker.w$mF<-unlist(lapply(poker.w$aF,function(xi)sum(as.numeric(substr(word(gsub(".*\\calls ","",xi)),2,6)), na.rm=TRUE)))
+poker.w$mF[is.na(poker.w$mF)] <- 0
+poker.w$mF<-as.numeric(poker.w$mF)
+poker.w$tempmoney<-unlist(lapply(poker.w$aF,function(xi)as.numeric(word(sub('.*\\$',"",tail(xi[gsub("calls.*","",xi)!= ""],1))))))
+poker.w$mF<-mapply(sum, poker.w$mF,poker.w$tempmoney, na.rm=TRUE)
+poker.w$tempmoney<-unlist(lapply(poker.w$aF,function(xi)as.numeric(substr(word(gsub("raises ","",tail(xi,1)),3,3),2,6))))
+poker.w$mF[poker.w$Fa=="raises"]<-poker.w$tempmoney[poker.w$Fa=="raises"]
+
+
+
+poker.w$mT<-unlist(lapply(poker.w$aT,function(xi)sum(as.numeric(substr(word(gsub(".*\\calls ","",xi)),2,6)), na.rm=TRUE)))
+poker.w$mT[is.na(poker.w$mT)] <- 0
+poker.w$mT<-as.numeric(poker.w$mT)
+poker.w$tempmoney<-unlist(lapply(poker.w$aT,function(xi)as.numeric(word(sub('.*\\$',"",tail(xi[gsub("calls.*","",xi)!= ""],1))))))
+poker.w$mT<-mapply(sum, poker.w$mT,poker.w$tempmoney, na.rm=TRUE)
+poker.w$tempmoney<-unlist(lapply(poker.w$aT,function(xi)as.numeric(substr(word(gsub("raises ","",tail(xi,1)),3,3),2,6))))
+poker.w$mT[poker.w$Ta=="raises"]<-poker.w$tempmoney[poker.w$Ta=="raises"]
+
+
+
+poker.w$mR<-unlist(lapply(poker.w$aR,function(xi)sum(as.numeric(substr(word(gsub(".*\\calls ","",xi)),2,6)), na.rm=TRUE)))
+poker.w$mR[is.na(poker.w$mR)] <- 0
+poker.w$mR<-as.numeric(poker.w$mR)
+poker.w$tempmoney<-unlist(lapply(poker.w$aR,function(xi)as.numeric(word(sub('.*\\$',"",tail(xi[gsub("calls.*","",xi)!= ""],1))))))
+poker.w$mR<-mapply(sum, poker.w$mR,poker.w$tempmoney, na.rm=TRUE)
+poker.w$tempmoney<-unlist(lapply(poker.w$aR,function(xi)as.numeric(substr(word(gsub("raises ","",tail(xi,1)),3,3),2,6))))
+poker.w$mR[poker.w$Ra=="raises"]<-poker.w$tempmoney[poker.w$Ra=="raises"]
+
+
+
+#opponent,####
+poker.w$Po<-poker.w$mP
+poker.w$Po[poker.w$Pa=="bets"]<-0
+poker.w$tempmoney<-unlist(lapply(poker.w$aP,function(xi)as.numeric(substr(word(gsub("raises ","",tail(xi,1))),2,6))))
+poker.w$Po[poker.w$Pa=="raises"]<-poker.w$Po[poker.w$Pa=="raises"]-poker.w$tempmoney[poker.w$Pa=="raises"]
+
+
+poker.w$Fo<-poker.w$mF
+poker.w$Fo[poker.w$Fa=="bets"]<-0
+poker.w$tempmoney<-unlist(lapply(poker.w$aF,function(xi)as.numeric(substr(word(gsub("raises ","",tail(xi,1))),2,6))))
+poker.w$Fo[poker.w$Fa=="raises"]<-poker.w$Fo[poker.w$Fa=="raises"]-poker.w$tempmoney[poker.w$Fa=="raises"]
+
+
+poker.w$To<-poker.w$mT
+poker.w$To[poker.w$Ta=="bets"]<-0
+poker.w$tempmoney<-unlist(lapply(poker.w$aT,function(xi)as.numeric(substr(word(gsub("raises ","",tail(xi,1))),2,6))))
+poker.w$To[poker.w$Ta=="raises"]<-poker.w$To[poker.w$Ta=="raises"]-poker.w$tempmoney[poker.w$Ta=="raises"]
+
+
+poker.w$Ro<-poker.w$mR
+poker.w$Ro[poker.w$Ra=="bets"]<-0
+poker.w$tempmoney<-unlist(lapply(poker.w$aR,function(xi)as.numeric(substr(word(gsub("raises ","",tail(xi,1))),2,6))))
+poker.w$Ro[poker.w$Ra=="raises"]<-poker.w$Ro[poker.w$Ra=="raises"]-poker.w$tempmoney[poker.w$Ra=="raises"]
+
+
+#betted money ratio####
+poker.w$Pm<-poker.w$mP/poker.w$chips
+poker.w$Fm<-poker.w$mF/(poker.w$chips-poker.w$mP)
+poker.w$Tm<-poker.w$mT/(poker.w$chips-poker.w$mP-poker.w$mF)
+poker.w$Rm<-poker.w$mR/(poker.w$chips-poker.w$mP-poker.w$mF-poker.w$mT)
+#opponent
+poker.w$Po<-poker.w$Po/poker.w$chips
+poker.w$Fo<-poker.w$Fo/(poker.w$chips-poker.w$mP)
+poker.w$To<-poker.w$To/(poker.w$chips-poker.w$mP-poker.w$mF)
+poker.w$Ro<-poker.w$Ro/(poker.w$chips-poker.w$mP-poker.w$mF-poker.w$mT)
+
+
+#invest money
+poker.w$Fi<-poker.w$mP/poker.w$chips
+poker.w$Ti<-(poker.w$mP+poker.w$mF)/poker.w$chips
+poker.w$Ri<-(poker.w$mP+poker.w$mF+poker.w$mT)/poker.w$chips
+
+#action to factor####
+poker.w$Pa<-mapply(tail,poker.w$aP,1)
+poker.w$Fa<-mapply(tail,poker.w$aF,1)
+poker.w$Ta<-mapply(tail,poker.w$aT,1)
+poker.w$Ra<-mapply(tail,poker.w$aR,1)
+
+poker.w$Pa<-factor(mapply(word,poker.w$Pa,1))
+poker.w$Fa<-factor(mapply(word,poker.w$Fa,1))
+poker.w$Ta<-factor(mapply(word,poker.w$Ta,1))
+poker.w$Ra<-factor(mapply(word,poker.w$Ra,1))
+
+poker.w$Pa = factor(poker.w$Pa,levels(poker.w$Pa)[c(2,1,3)])
+poker.w$Fa = factor(poker.w$Fa,levels(poker.w$Fa)[c(3,2,1,4)])
+poker.w$Ta = factor(poker.w$Ta,levels(poker.w$Ta)[c(3,2,1,4)])
+poker.w$Ra = factor(poker.w$Ra,levels(poker.w$Ra)[c(3,2,1,4)])
+
+
+#DATA####
+poker.pre<-data.frame(poker.w$winner, poker.w$HS.p, poker.w$blind, poker.w$Po, poker.w$Pa, poker.w$Pm)
+poker.flop<-data.frame(poker.w$winner, poker.w$HS.f, poker.w$HS.fb, poker.w$Fi, poker.w$Fo, poker.w$Fa, poker.w$Fm)
+poker.turn<-data.frame(poker.w$winner, poker.w$HS.t, poker.w$HS.tb, poker.w$Ti, poker.w$To, poker.w$Ta, poker.w$Tm)
+poker.river<-data.frame(poker.w$winner, poker.w$HS.r, poker.w$HS.rb, poker.w$Ri, poker.w$Ro, poker.w$Ra, poker.w$Rm)
+
+poker.flop <- poker.flop[complete.cases(poker.flop[6]), ]
+poker.turn <- poker.turn[complete.cases(poker.turn[6]), ]
+poker.river <- poker.river[complete.cases(poker.river[6]), ]
+
+
+
+```
+
+###贏家、手牌強度、公牌強度、已投入資本、最小下注額度、動作、投入資本
+
+```{r warning=FALSE}
+head(poker.flop)
+```
+
+##分群
+
+```{r warning=FALSE}
+#pca,cluster####
+
+
+pcs.f <- prcomp(formula = ~ poker.w.HS.f+poker.w.HS.fb+poker.w.Fi+poker.w.Fo+poker.w.Fm, data=poker.flop, center = F, scale = F)
+pcs.f
+plot(pcs.f)
+pc.f <- cbind(poker.flop, pcs.f$x)
+ggplot(pc.f, aes(x = PC1, y = PC2, colour = poker.w.Fa)) + geom_point()
+
+ratio <- rep(NA, times = 10)
+for (k in 2:length(ratio)) {
+  kmeans_fit <- kmeans(pcs.f$x, centers = k, nstart = 20)
+  ratio[k] <- kmeans_fit$tot.withinss / kmeans_fit$betweenss
+}
+plot(ratio, type="b", xlab="k")
+
+kmeans_flop <- kmeans(pcs.f$x, nstart=20, centers=6)
+cf<-kmeans_flop$cluster
+pc.f <- cbind(pc.f, cf)
+pc.f$cf<-as.factor(pc.f$cf)
+
+#TURN
+pcs.t <- prcomp(formula = ~ poker.w.HS.t+poker.w.HS.tb+poker.w.Ti+poker.w.To+poker.w.Tm, data=poker.turn, center = F, scale = F)
+pc.t <- cbind(poker.turn, pcs.t$x)
+
+kmeans_turn <- kmeans(pcs.t$x, nstart=20, centers=6)
+ct<-kmeans_turn$cluster
+pc.t <- cbind(pc.t, ct)
+pc.t$ct<-as.factor(pc.t$ct)
+
+#RIVER
+pcs.r <- prcomp(formula = ~ poker.w.HS.r+poker.w.HS.rb+poker.w.Ri+poker.w.Ro+poker.w.Rm, data=poker.river, center = F, scale = F)
+pc.r <- cbind(poker.river, pcs.r$x)
+
+kmeans_river <- kmeans(pcs.r$x, nstart=20, centers=6)
+cr<-kmeans_river$cluster
+pc.r <- cbind(pc.r, cr)
+pc.r$cr<-as.factor(pc.r$cr)
+
+```
+
+##翻牌圈
+
+```{r }
+ggplot(pc.f, aes(x = PC1, y = PC2, colour = cf)) + geom_point(aes(shape = poker.w.Fa ))
+
+```
+
+##轉牌圈
+
+```{r}
+ggplot(pc.t, aes(x = PC1, y = PC2, colour = ct)) + geom_point(aes(shape = poker.w.Ta ))
+
+```
+
+##河牌圈
+
+```{r}
+ggplot(pc.r, aes(x = PC1, y = PC2, colour = cr)) + geom_point(aes(shape = poker.w.Ra ))
+
+```
+
+
+
