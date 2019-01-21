@@ -6,8 +6,8 @@
   - 命名實體識別 Named Entity Recognition
   - [NER_practice](https://x666772.github.io/CSX_Lyhs/week_12/hw_12/NER_CNN.html)
  
-- project week_6~8
-  - [lyrics_analysis.html](https://x666772.github.io/CSX_Lyhs/week_6/hw_678/lyrics_analysis.html)
+- project_week_6~10
+  - [魔鏡歌詞網歌詞分析](https://x666772.github.io/CSX_Lyhs/week_6/hw_678/lyrics_analysis.html)
 
 - week_7
   - shiny app
