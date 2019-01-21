@@ -13,6 +13,7 @@
 - week_3
   - Open data set
   - 資料視覺化 & ggplot2
+  - 
   
 - week_4
   - Open API
@@ -29,4 +30,11 @@
  
 - week_7
   - shiny app
+  
+- project week_6~8
+  - [lyrics_analysis.html](https://x666772.github.io/CSX_Lyhs/week_6/hw_678/lyrics_analysis.html)
+  
+- week_12
+  - 命名實體識別 Named Entity Recognition
+  - [NER_practice](https://x666772.github.io/CSX_Lyhs/week_12/hw_12/NER_CNN.html)
 
