@@ -1,0 +1,133 @@
+---
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#探討熱門歌曲的關鍵歌詞
+Sam Liao
+
+載入套件包
+```{r cars, message=FALSE, warning=FALSE}
+library(bitops)
+library(httr)
+library(RCurl)
+library(XML)
+library(tm)
+library(NLP)
+library(tmcn)
+library(jiebaRD)
+library(jiebaR)
+library(rvest)
+library(magrittr)
+library(ggplot2)
+library(tidytext)
+library(stats)
+library(proxy)
+library(readtext)
+library(slam)
+library(Matrix)
+library(dplyr)
+```
+
+抓出「魔鏡歌詞網」排行榜上所有歌曲所對應的歌詞連結網址
+```{r pressure, warning=FALSE}
+url  <- 'https://mojim.com/twzhot-song.htm'
+html <- htmlParse( GET(url) )
+xpath= '//*[(@id = "mx5_A") and (((count(preceding-sibling::*) + 1) = 1) and parent::*)]//a[(((count(preceding-sibling::*) + 1) = 1) and parent::*)]'
+url.list <- xpathSApply( html, xpath, xmlAttrs )
+url.list= url.list[1,]
+urls= list()
+paster= function(a){paste0('https://mojim.com',a)}
+urls= lapply(url.list, paster)
+urls= unlist(urls)
+tail(urls)
+```
+
+爬入歌詞並存檔
+```{r echo=TRUE}
+xpath2= '//*[(@id = "fsZx3")]'
+xpath3= '//*[(@id = "fsZx2")]'
+getdoc <- function(url){
+  html <- htmlParse( getURL(url) )
+  doc  <- xpathSApply( html, xpath2, xmlValue )
+  title= xpathSApply(html, xpath3, xmlValue)
+  name <- paste0(title, ".txt")
+  write(doc, name)
+}
+#lapply(urls,getdoc)
+```
+
+建立文本資料結構與基本文字清洗
+```{r warning=FALSE}
+setwd("D:/CSX_Lyhs/week_5/hw_5/lyrics")
+dir = DirSource("./", encoding = "BIG-5")
+dir
+corpus = Corpus(dir)
+corpus <- tm_map(corpus, removePunctuation)
+corpus <- tm_map(corpus, removeNumbers)
+corpus <- tm_map(corpus, function(word) {
+  gsub("[A-Za-z0-9]", "", word)})
+```
+
+斷詞
+```{r}
+mixseg = worker()
+jieba_tokenizer = function(d){
+  unlist(segment(d[[1]], mixseg))
+}
+seg = lapply(corpus, jieba_tokenizer)
+```
+
+詞頻向量
+```{r}
+freqFrame = as.data.frame(table(unlist(seg)))
+tail(freqFrame)
+```
+
+詞頻矩陣TDM
+```{r warning=FALSE}
+d.corpus <- Corpus(VectorSource(seg))
+tdm <- TermDocumentMatrix(d.corpus)
+tf <- as.matrix(tdm)
+DF <- tidy(tf)
+DF
+```
+
+TDM 轉 TF-IDF
+```{r}
+N = tdm$ncol
+tf <- apply(tdm, 2, sum) 
+idfCal <- function(word_doc){ 
+  log2( N / nnzero(word_doc) )   
+}
+idf <- apply(tdm, 1, idfCal)
+doc.tfidf <- as.matrix(tdm)
+for(x in 1:nrow(tdm)){
+  for(y in 1:ncol(tdm))
+  {
+    doc.tfidf[x,y] <- (doc.tfidf[x,y] / tf[y]) * idf[x]
+  }
+}
+findZeroId = as.matrix(apply(doc.tfidf, 1, sum)) # 1=對每個Row
+tfidfnn = doc.tfidf[-which(findZeroId == 0),]
+tfidfnn[1:7,1:7]
+```
+
+找出熱門關鍵詞
+```{r}
+freq=rowSums(as.matrix(tfidfnn))
+head(freq,10)
+high.freq=tail(sort(freq),n=10)
+hfp.df=as.data.frame(sort(high.freq))
+hfp.df$names <- rownames(hfp.df) 
+ggplot(hfp.df, aes(reorder(names,high.freq), high.freq)) +
+  geom_bar(stat="identity") + coord_flip() + 
+  xlab("Terms") + ylab("Frequency") +
+  ggtitle("關鍵詞")
+
+plot(sort(freq, decreasing = T),col="blue",main="關鍵程度", xlab="TF-IDF-based rank", ylab = "TF-IDF")
+```
+
+

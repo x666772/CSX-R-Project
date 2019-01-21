@@ -1,0 +1,55 @@
+---
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 主題: 探討Google App Store評分與各項數值的關係
+Load Library
+```{r warning=FALSE}
+library(stringr)
+library(ggplot2)
+```
+
+讀檔&檢查性質
+```{r warning=FALSE}
+data = read.csv("D:/CSX_Lyhs/week_3/hw_3/googleplaystore.csv",encoding='UTF-8')   
+str(data)
+```
+
+
+修正Column name 亂碼&資料性質
+```{r warning=FALSE}
+names(data)[names(data) == 'X.U.FEFF.App'] <- 'App'
+
+data$Reviews<-as.numeric(as.character(data$Reviews))
+
+data$Size<-as.character(data$Size)
+data$Size<-str_replace_all(data$Size, 'M','')
+data$Size<-as.numeric(data$Size)
+
+data$Installs<-as.character(data$Installs)
+data$Installs<-gsub('[[:punct:]]','',data$Installs)
+data$Installs<-as.numeric(data$Installs)
+
+data$Price<-as.character(data$Price)
+data$Price<-substr(data$Price,2,6)
+data$Price<- as.numeric(data$Price)
+data$Price[is.na(data$Price)] <-0
+
+str(data)
+```
+
+繪圖觀察與Rating的關係
+```{r warning=FALSE}
+#評分與價格: 可知超高價族群在3.5~4.4顆星之間
+ggplot(data, aes(x= Rating, y=Price ))+ geom_point()
+#評分與安裝數: 最多人裝的在4.7~4.5顆星間；次多的在4.0~4.7顆星間
+ggplot(data, aes(x= Rating, y=Installs ))+ geom_point()
+#評分與評論數: 4顆星以下的都沒什麼人評價
+ggplot(data, aes(x= Rating, y=Reviews ))+ geom_point()
+#評分與檔案大小: 4.5顆星前約略呈正向關係
+ggplot(data, aes(x= Rating, y=Size ))+ geom_point()+ geom_smooth()
+```
+
