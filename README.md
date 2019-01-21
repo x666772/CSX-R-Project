@@ -13,7 +13,6 @@
 - week_3
   - Open data set
   - 資料視覺化 & ggplot2
-  - 
   
 - week_4
   - Open API
